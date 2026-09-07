@@ -433,8 +433,10 @@ function applyElementMark(state: CombatState, enemy: EnemyInstance, element: Ele
 
   if (existingOther) {
     const [oldEl] = existingOther;
-    const key = `${oldEl}>${element}`;
-    const reaction = ELEMENT_REACTIONS[key];
+    // 반응표는 방향 하나씩만 정의돼 있지만(fire>ice 등), 어느 순서로 마커가 겹쳐도
+    // 같은 반응이 터지도록 양방향으로 찾는다 (그렇지 않으면 세 조합 중 절반은 아무 반응 없이
+    // 마커만 조용히 사라져서 "원소가 안 먹힌다"는 혼란을 준다).
+    const reaction = ELEMENT_REACTIONS[`${oldEl}>${element}`] ?? ELEMENT_REACTIONS[`${element}>${oldEl}`];
     enemy.elementMarks = {};
     if (reaction) {
       log(state, `${enemy.name}: ${reaction.label}!`);

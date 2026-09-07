@@ -43,8 +43,8 @@ export const ELEMENT_INFO: Record<ElementId, Record<Locale, string>> = {
 };
 
 export const ELEMENT_REACTION_TEXT: Record<Locale, string> = {
-  ko: '속성 마커는 최대 5까지 쌓이며 그 자체로는 피해를 주지 않습니다. 적에게 이미 마커가 있는 상태에서 다른 속성을 부여하면 즉시 반응이 발동하고 두 마커는 모두 사라집니다.\n\n화염 → 얼음: 증기 폭발 (피해 8)\n얼음 → 번개: 전도 (취약 2)\n번개 → 화염: 과열 (중독 4)',
-  en: "Element marks stack up to 5 and deal no damage on their own. Applying a different element while a mark is already active triggers an instant reaction and clears both marks.\n\nFire → Ice: Steam Burst (8 damage)\nIce → Lightning: Conduction (2 Vulnerable)\nLightning → Fire: Overheat (4 Poison)",
+  ko: '속성 마커는 최대 5까지 쌓이며 그 자체로는 피해를 주지 않습니다. 적에게 이미 다른 속성 마커가 있는 상태에서 새 속성을 부여하면 (어느 쪽을 먼저 걸었든 상관없이) 즉시 반응이 발동하고 두 마커는 모두 사라집니다.\n\n화염 + 얼음: 증기 폭발 (피해 8)\n얼음 + 번개: 전도 (취약 2)\n번개 + 화염: 과열 (중독 4)',
+  en: "Element marks stack up to 5 and deal no damage on their own. Applying a different element while another mark is already active triggers an instant reaction and clears both marks — the order you apply them in doesn't matter.\n\nFire + Ice: Steam Burst (8 damage)\nIce + Lightning: Conduction (2 Vulnerable)\nLightning + Fire: Overheat (4 Poison)",
 };
 
 export const LINE_INFO: Record<Locale, string> = {
