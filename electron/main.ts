@@ -2,7 +2,10 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { autoUpdater } from 'electron-updater';
+// electron-updater는 CommonJS 모듈이라 이름 있는 내보내기(named export)를
+// ESM에서 바로 가져올 수 없다. 기본 내보내기를 받아 구조 분해해야 한다.
+import electronUpdater from 'electron-updater';
+const { autoUpdater } = electronUpdater;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
