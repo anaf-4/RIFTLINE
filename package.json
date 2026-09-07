@@ -1,7 +1,7 @@
 {
   "name": "riftline",
   "private": true,
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "RIFTLINE — 전열/후열 라인 시스템을 갖춘 2D 로그라이크 덱빌딩 카드게임",
   "author": "TEAM.CRAFT",
   "type": "module",
