@@ -114,6 +114,7 @@ export default function CombatScreen() {
           locale={locale}
           playerShake={playerShake}
           enemyShake={enemyShake}
+          attackSeq={ui.lastPlayed?.seq ?? 0}
           targetable={targetable}
           onTarget={(uid) => selectTarget(uid)}
         />

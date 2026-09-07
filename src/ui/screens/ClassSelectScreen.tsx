@@ -69,7 +69,7 @@ export default function ClassSelectScreen() {
               >
                 <div
                   className="rl-class-portrait"
-                  style={{ backgroundImage: `url(assets/characters/char_${c}.png)` }}
+                  style={{ backgroundImage: `url(assets/characters/${c}_idle.png)` }}
                 />
                 <div style={{ fontWeight: 700, marginBottom: 6 }}>{locale === 'ko' ? info.name : info.nameEn}</div>
                 <div style={{ fontSize: 11, color: 'var(--text-sub)' }}>

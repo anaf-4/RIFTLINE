@@ -103,18 +103,24 @@
 }
 
 .rl-enemy-sprite {
-  width: 56px;
-  height: 56px;
+  width: 62px;
+  height: 78px;
   margin: 0 auto 6px;
   border-radius: 8px;
   background-size: cover;
   background-position: center top;
   background-color: #1a1a22;
   border: 1px solid var(--border);
+  animation: rl-idle-bob 2.4s ease-in-out infinite;
 }
 
 .rl-player-sprite {
   background-position: center top;
+}
+
+@keyframes rl-idle-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
 }
 
 .rl-hpbar {
