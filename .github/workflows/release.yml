@@ -4,6 +4,9 @@ name: Release
 # Android APK를 빌드해 같은 GitHub Release에 첨부한다.
 # electron-updater(데스크톱)는 이 Release를 보고 자동으로 새 버전을 감지/설치한다.
 # 안드로이드는 사이드로드라 앱 내에서 "새 버전 있음" 배너만 띄우고, 설치는 사용자가 직접 진행한다.
+#
+# 릴리스는 draft로 만들어 두 빌드 잡이 에셋을 붙일 시간을 벌고, 둘 다 끝나면 finalize에서 게시한다.
+# (electron-builder의 GitHub publish는 이미 게시된 릴리스에는 에셋을 올리지 않고 조용히 건너뛴다.)
 
 on:
   push:
@@ -51,13 +54,14 @@ jobs:
           git push origin main
           git push origin "${{ steps.bump.outputs.tag }}"
 
-      - name: Create GitHub Release
+      - name: Create draft GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create "${{ steps.bump.outputs.tag }}" \
             --title "RIFTLINE ${{ steps.bump.outputs.tag }}" \
-            --generate-notes
+            --generate-notes \
+            --draft
 
   build-windows:
     needs: version
@@ -78,7 +82,7 @@ jobs:
       - run: npm run build:electron
         shell: bash
 
-      - name: Publish exe to release
+      - name: Publish exe to draft release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx electron-builder --win --publish always
@@ -110,13 +114,8 @@ jobs:
       - name: Ensure gradlew is executable
         run: chmod +x android/gradlew
 
-      - name: Capacitor CLI diagnostics
-        run: |
-          node -v
-          npx cap --version
-          ls -la node_modules/.bin | grep cap || true
-          cat capacitor.config.ts
-
+      # cap sync (copy+update 결합)는 이 Linux 러너에서 즉시 실패한다 — 원인 불명이지만
+      # copy와 update를 분리해서 호출하면 정상 동작한다.
       - name: cap copy android
         run: npx cap copy android
 
@@ -127,10 +126,19 @@ jobs:
         working-directory: android
         run: ./gradlew assembleDebug
 
-      - name: Upload APK to release
+      - name: Upload APK to draft release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release upload "${{ needs.version.outputs.tag }}" \
             "android/app/build/outputs/apk/debug/app-debug.apk#RIFTLINE-${{ needs.version.outputs.tag }}.apk" \
             --clobber
+
+  finalize:
+    needs: [version, build-windows, build-android]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish the release (undraft)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release edit "${{ needs.version.outputs.tag }}" --draft=false --repo anaf-4/RIFTLINE
