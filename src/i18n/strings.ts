@@ -68,6 +68,8 @@ export const strings = {
     tutorial_endturn_body: '더 쓸 카드가 없다면 턴 종료 버튼을 누르세요.',
     next: '다음',
     got_it: '확인',
+    update_available: (v: string) => `새 버전 ${v}이 있습니다`,
+    update_download: '다운로드',
   },
   en: {
     title_subtitle: 'RIFTLINE — the reach of a single card decides the fight',
@@ -138,6 +140,8 @@ export const strings = {
     tutorial_endturn_body: "When you're out of useful plays, press End Turn.",
     next: 'Next',
     got_it: 'Got it',
+    update_available: (v: string) => `Version ${v} is available`,
+    update_download: 'Download',
   },
 } as const;
 

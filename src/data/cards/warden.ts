@@ -226,8 +226,8 @@ export const wardenCards: CardDef[] = [
   card({
     id: 'warden_destroyersblow', name: '파괴의 일격', nameEn: "Destroyer's Blow", cls: 'warden', type: 'attack', rarity: 'rare',
     cost: 3, range: 'melee',
-    effects: [{ op: 'damage', target: 'enemy_single', value: 26 }],
-    upgradeEffects: [{ op: 'damage', target: 'enemy_single', value: 32 }],
+    effects: [{ op: 'damage', target: 'enemy_single', value: 24 }],
+    upgradeEffects: [{ op: 'damage', target: 'enemy_single', value: 30 }],
   }),
   card({
     id: 'warden_finalbulwark', name: '최종 방벽', nameEn: 'Final Bulwark', cls: 'warden', type: 'skill', rarity: 'rare',
@@ -340,8 +340,8 @@ export const wardenCards: CardDef[] = [
   card({
     id: 'warden_recklessblow', name: '만신창이 일격', nameEn: 'Reckless Blow', cls: 'warden', type: 'attack', rarity: 'rare',
     cost: 2, range: 'melee', exhaustAfterUse: true,
-    effects: [{ op: 'damage', target: 'enemy_single', value: 22 }, { op: 'heal', value: -4 }],
-    upgradeEffects: [{ op: 'damage', target: 'enemy_single', value: 28 }, { op: 'heal', value: -4 }],
+    effects: [{ op: 'damage', target: 'enemy_single', value: 20 }, { op: 'heal', value: -4 }],
+    upgradeEffects: [{ op: 'damage', target: 'enemy_single', value: 26 }, { op: 'heal', value: -4 }],
   }),
   card({
     id: 'warden_armorup', name: '갑주 강화', nameEn: 'Armor Up', cls: 'warden', type: 'power', rarity: 'common',
@@ -406,8 +406,8 @@ export const wardenCards: CardDef[] = [
   card({
     id: 'warden_riftsmash', name: '균열 강타', nameEn: 'Rift Smash', cls: 'warden', type: 'attack', rarity: 'rare',
     cost: 3, range: 'melee',
-    effects: [{ op: 'damage', target: 'enemy_single', value: 28 }],
-    upgradeEffects: [{ op: 'damage', target: 'enemy_single', value: 34 }],
+    effects: [{ op: 'damage', target: 'enemy_single', value: 25 }],
+    upgradeEffects: [{ op: 'damage', target: 'enemy_single', value: 31 }],
   }),
   card({
     id: 'warden_shieldthrow', name: '방패 투척', nameEn: 'Shield Throw', cls: 'warden', type: 'attack', rarity: 'common',
@@ -424,7 +424,7 @@ export const wardenCards: CardDef[] = [
   card({
     id: 'warden_relentless', name: '가차없는 연타', nameEn: 'Relentless Barrage', cls: 'warden', type: 'attack', rarity: 'rare',
     cost: 3, range: 'melee',
-    effects: [{ op: 'damageMulti', target: 'enemy_single', value: 9, times: 3 }],
-    upgradeEffects: [{ op: 'damageMulti', target: 'enemy_single', value: 11, times: 3 }],
+    effects: [{ op: 'damageMulti', target: 'enemy_single', value: 8, times: 3 }],
+    upgradeEffects: [{ op: 'damageMulti', target: 'enemy_single', value: 10, times: 3 }],
   }),
 ];

@@ -191,8 +191,8 @@ export const scribeCards: CardDef[] = [
   card({
     id: 'scribe_masterstroke', name: '필력의 정점', nameEn: 'Masterstroke', cls: 'scribe', type: 'attack', rarity: 'rare',
     cost: 3, range: 'melee',
-    effects: [{ op: 'damage', target: 'enemy_single', value: 26 }],
-    upgradeEffects: [{ op: 'damage', target: 'enemy_single', value: 32 }],
+    effects: [{ op: 'damage', target: 'enemy_single', value: 24 }],
+    upgradeEffects: [{ op: 'damage', target: 'enemy_single', value: 30 }],
   }),
   card({
     id: 'scribe_farmark', name: '원거리 표식', nameEn: 'Distant Mark', cls: 'scribe', type: 'attack', rarity: 'common',
@@ -415,8 +415,8 @@ export const scribeCards: CardDef[] = [
   card({
     id: 'scribe_forbiddenchapter', name: '금단의 장', nameEn: 'Forbidden Chapter', cls: 'scribe', type: 'attack', rarity: 'rare',
     cost: 1, range: 'melee', exhaustAfterUse: true,
-    effects: [{ op: 'damage', target: 'enemy_single', value: 16 }, { op: 'heal', value: -3 }],
-    upgradeEffects: [{ op: 'damage', target: 'enemy_single', value: 21 }, { op: 'heal', value: -3 }],
+    effects: [{ op: 'damage', target: 'enemy_single', value: 13 }, { op: 'heal', value: -3 }],
+    upgradeEffects: [{ op: 'damage', target: 'enemy_single', value: 17 }, { op: 'heal', value: -3 }],
   }),
   card({
     id: 'scribe_appendix', name: '부록', nameEn: 'Appendix', cls: 'scribe', type: 'skill', rarity: 'common',

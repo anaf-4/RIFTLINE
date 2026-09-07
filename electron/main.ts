@@ -2,8 +2,41 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
+import { autoUpdater } from 'electron-updater';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// 자동 업데이트: NSIS 설치본에서만 동작한다 (포터블 exe는 electron-updater가 지원하지 않는다).
+// GitHub Releases에 새 버전이 올라오면 자동으로 감지해 백그라운드로 내려받고,
+// 앱을 재시작할 때 설치한다. package.json의 build.publish가 대상 저장소를 지정한다.
+autoUpdater.autoDownload = true;
+autoUpdater.autoInstallOnAppQuit = true;
+
+function setupAutoUpdater() {
+  if (!app.isPackaged) return; // 개발 모드에서는 건너뛴다
+
+  autoUpdater.on('error', (err) => {
+    console.error('[auto-update] error:', err);
+  });
+  autoUpdater.on('update-available', (info) => {
+    console.log('[auto-update] update available:', info.version);
+  });
+  autoUpdater.on('update-downloaded', (info) => {
+    console.log('[auto-update] downloaded, will install on quit:', info.version);
+  });
+
+  autoUpdater.checkForUpdatesAndNotify().catch((err) => {
+    console.error('[auto-update] check failed:', err);
+  });
+
+  // 이후 6시간마다 재확인 (장시간 켜두는 사용자를 위해)
+  setInterval(
+    () => {
+      autoUpdater.checkForUpdatesAndNotify().catch(() => {});
+    },
+    6 * 60 * 60 * 1000
+  );
+}
 
 function sanitizeKey(key: string): string {
   return key.replace(/[^a-zA-Z0-9._-]/g, '_');
@@ -72,7 +105,10 @@ if (!gotLock) {
     }
   });
 
-  app.whenReady().then(createWindow);
+  app.whenReady().then(() => {
+    createWindow();
+    setupAutoUpdater();
+  });
 
   app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit();

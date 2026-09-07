@@ -20,7 +20,8 @@ function pickType(rng: Rng, row: number, prevRowTypes: Map<number, NodeType>): N
   if ((type === 'elite' && prev === 'elite') || (type === 'rest' && prev === 'rest')) {
     return 'combat';
   }
-  if (row === 1 && type === 'elite') return 'combat';
+  // 초반 2줄은 엘리트를 배치하지 않는다 (휴식 없이 바로 강한 전투를 만나는 것을 방지)
+  if (row <= 2 && type === 'elite') return 'combat';
   return type;
 }
 
@@ -61,6 +62,9 @@ export function generateActMap(act: 1 | 2 | 3 | 4, rng: Rng): MapNode[] {
     }
   }
 
+  // 중반에 최소 한 번의 휴식을 보장한다 (운 나쁘면 첫 휴식을 보스 직전까지 못 만나는 문제 방지)
+  const guaranteedRestRow = Math.floor(ROWS_PER_ACT / 2);
+
   // 타입 배정: 행 전체를 보고 이전 행 타입을 참고해 연속 억제
   const prevRowTypes = new Map<number, NodeType>();
   for (let row = 0; row < ROWS_PER_ACT; row++) {
@@ -69,6 +73,8 @@ export function generateActMap(act: 1 | 2 | 3 | 4, rng: Rng): MapNode[] {
     let rowType: NodeType;
     if (row === ROWS_PER_ACT - 1) {
       rowType = 'rest'; // 보스 직전은 항상 휴식 (기획서 9장: "휴식 → 보스")
+    } else if (row === guaranteedRestRow) {
+      rowType = 'rest';
     } else {
       rowType = pickType(rng, row, prevRowTypes);
     }

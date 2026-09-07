@@ -2,6 +2,8 @@
   "name": "riftline",
   "private": true,
   "version": "0.1.0",
+  "description": "RIFTLINE — 전열/후열 라인 시스템을 갖춘 2D 로그라이크 덱빌딩 카드게임",
+  "author": "TEAM.CRAFT",
   "type": "module",
   "main": "dist-electron/main.js",
   "scripts": {
@@ -19,6 +21,7 @@
   "dependencies": {
     "@capacitor/app": "^8.1.1",
     "@capacitor/preferences": "^8.0.1",
+    "electron-updater": "^6.8.9",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "zustand": "^5.0.15"
@@ -47,13 +50,25 @@
     "directories": {
       "output": "release"
     },
-    "files": ["dist/**/*", "dist-electron/**/*", "package.json"],
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "package.json"
+    ],
     "win": {
-      "target": ["nsis", "portable"]
+      "target": [
+        "nsis",
+        "portable"
+      ]
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "anaf-4",
+      "repo": "RIFTLINE"
     }
   }
 }

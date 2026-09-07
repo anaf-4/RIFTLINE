@@ -35,6 +35,8 @@ import type { MetaSave } from '../core/save';
 import { defaultMeta } from '../core/save';
 import { achievements } from '../data/achievements';
 import { sfx } from '../core/audio';
+import { checkForUpdate, type UpdateInfo } from '../core/updateCheck';
+import { Capacitor } from '@capacitor/core';
 
 let rng: Rng = createRng(1);
 let playSeq = 0;
@@ -47,6 +49,7 @@ interface UIState {
   lastPlayed: { seq: number; cardUid: string; defId: string; upgraded: boolean; exhaust: boolean } | null;
   hasSave: boolean;
   newAchievements: string[];
+  updateInfo: UpdateInfo;
 }
 
 interface Store {
@@ -125,12 +128,20 @@ export const useGameStore = create<Store>((set, get) => ({
     lastPlayed: null,
     hasSave: false,
     newAchievements: [],
+    updateInfo: { available: false },
   },
   meta: defaultMeta(),
 
   initApp: async () => {
     const [meta, saved] = await Promise.all([loadMeta(), hasSavedRun()]);
     set((s) => ({ meta, ui: { ...s.ui, hasSave: saved } }));
+
+    // 자동 업데이트는 Electron(electron-updater)에서 자체 처리한다.
+    // 여기서는 안드로이드 사이드로드 빌드에서만 "새 버전 있음" 배너를 위해 확인한다.
+    if (Capacitor.isNativePlatform()) {
+      const updateInfo = await checkForUpdate();
+      if (updateInfo.available) set((s) => ({ ui: { ...s.ui, updateInfo } }));
+    }
   },
 
   goToClassSelect: () => {
