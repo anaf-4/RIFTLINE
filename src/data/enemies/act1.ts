@@ -50,10 +50,11 @@ export const act1Enemies: EnemyDef[] = [
     act: 1,
     line: 'back',
     hp: [30, 36],
-    canMove: false,
+    canMove: true,
     intents: [
-      { type: 'attack', value: 4, weight: 50, ranged: true },
-      { type: 'debuff', status: 'poison', value: 3, weight: 50 },
+      { type: 'attack', value: 4, weight: 35, ranged: true },
+      { type: 'debuff', status: 'poison', value: 3, weight: 35 },
+      { type: 'move', weight: 30 },
     ],
   },
   {

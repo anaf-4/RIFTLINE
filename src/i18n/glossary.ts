@@ -19,8 +19,8 @@ export const STATUS_INFO: Record<StatusId, Record<Locale, string>> = {
     en: 'Dexterity: Increases Block gained by this amount. Does not decay over time.',
   },
   poison: {
-    ko: '중독: 매 턴 시작 시 수치만큼 피해를 입고, 그 후 1씩 감소합니다.',
-    en: 'Poison: Deals damage equal to its value at the start of each turn, then decreases by 1.',
+    ko: '중독: 매 턴 시작 시 수치만큼 피해를 입고(방어막 무시), 그 후 1씩 감소합니다.',
+    en: 'Poison: Deals damage equal to its value at the start of each turn (ignores Block), then decreases by 1.',
   },
   bind: {
     ko: '속박: 이동(라인 전환)을 할 수 없습니다. 매 턴 종료 시 1씩 감소합니다.',

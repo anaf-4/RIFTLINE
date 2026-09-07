@@ -86,6 +86,7 @@ interface Store {
   restImprint: (cardUid: string, imprint: ImprintId) => void;
 
   eventChoose: (choiceIndex: number) => void;
+  eventResultAck: () => void;
 }
 
 function persistRun(run: RunState | null) {
@@ -398,9 +399,14 @@ export const useGameStore = create<Store>((set, get) => ({
     if (!game.run || !game.activeEvent) return;
     const choice = game.activeEvent.choices[choiceIndex];
     if (choice.requiresGold && game.run.gold < choice.requiresGold) return;
-    const run = resolveEventChoice(game.run, choice, rng);
-    set({ game: { screen: 'map', run } });
+    const { run, success, messageKo, messageEn } = resolveEventChoice(game.run, choice, rng);
+    set({ game: { screen: 'event', run, eventResult: { messageKo, messageEn, success } } });
     persistRun(run);
+  },
+
+  eventResultAck: () => {
+    const { game } = get();
+    set({ game: { screen: 'map', run: game.run } });
   },
 }));
 

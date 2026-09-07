@@ -1,11 +1,11 @@
-import type { RunState, CardInstance, ClassId, MapNode, ShopStock, ImprintId, EventChoice } from './types';
+import type { RunState, CardInstance, ClassId, MapNode, ShopStock, ImprintId, EventChoice, EventResult } from './types';
 import type { Rng } from './rng';
 import { createRng, randomSeed } from './rng';
 import { makeCardInstance } from './deck';
 import { startCombat } from './combat';
 import { generateActMap, reachableNodeIds } from './map';
 import { generateEncounter } from '../data/enemies';
-import { allCards } from '../data/cards';
+import { allCards, getCardDef } from '../data/cards';
 import { relics, startingRelicFor } from '../data/relics';
 import { potions } from '../data/potions';
 import { events } from '../data/events';
@@ -330,30 +330,86 @@ export function attachImprint(run: RunState, cardUid: string, imprint: ImprintId
 
 // ---------- 이벤트 ----------
 
-export function resolveEventChoice(run: RunState, choice: EventChoice, rng: Rng): RunState {
+export function resolveEventChoice(run: RunState, choice: EventChoice, rng: Rng): EventResult {
   let next = structuredClone(run);
+  const msgKo: string[] = [];
+  const msgEn: string[] = [];
 
-  if (choice.goldDelta) {
-    next.gold = Math.max(0, next.gold + choice.goldDelta);
-  }
-  for (const eff of choice.effects) {
-    if (eff.op === 'heal') {
-      next.hp = Math.min(next.maxHp, Math.max(1, next.hp + (eff.value ?? 0)));
-    } else if (eff.op === 'modifyStat' && eff.stat === 'maxHp') {
-      next.maxHp += eff.value ?? 0;
-      next.hp = Math.min(next.maxHp, next.hp + Math.max(0, eff.value ?? 0));
+  const success = choice.successChance === undefined ? true : rng.next() < choice.successChance;
+
+  if (success) {
+    if (choice.goldDelta) {
+      const before = next.gold;
+      next.gold = Math.max(0, next.gold + choice.goldDelta);
+      const actual = next.gold - before;
+      if (actual !== 0) {
+        msgKo.push(`골드 ${actual > 0 ? '+' : ''}${actual}`);
+        msgEn.push(`Gold ${actual > 0 ? '+' : ''}${actual}`);
+      }
+    }
+    for (const eff of choice.effects) {
+      if (eff.op === 'heal') {
+        const before = next.hp;
+        next.hp = Math.min(next.maxHp, Math.max(1, next.hp + (eff.value ?? 0)));
+        const actual = next.hp - before;
+        if (actual !== 0) {
+          msgKo.push(`체력 ${actual > 0 ? '+' : ''}${actual}`);
+          msgEn.push(`HP ${actual > 0 ? '+' : ''}${actual}`);
+        }
+      } else if (eff.op === 'modifyStat' && eff.stat === 'maxHp') {
+        const value = eff.value ?? 0;
+        next.maxHp += value;
+        next.hp = Math.min(next.maxHp, next.hp + Math.max(0, value));
+        msgKo.push(`최대 체력 ${value > 0 ? '+' : ''}${value}`);
+        msgEn.push(`Max HP ${value > 0 ? '+' : ''}${value}`);
+      }
+    }
+    if (choice.relicId === 'random' || choice.relicId) {
+      const relicId = choice.relicId === 'random' ? generateRelicReward(next, rng) : choice.relicId;
+      if (relicId) {
+        next = addRelic(next, relicId);
+        const def = relics.find((r) => r.id === relicId);
+        msgKo.push(`유물 획득: ${def?.name ?? relicId}`);
+        msgEn.push(`Relic gained: ${def?.nameEn ?? def?.name ?? relicId}`);
+      }
+    }
+    if (choice.gainRandomCard) {
+      const pool = allCards.filter((c) => (c.class === next.className || c.class === 'common') && c.type !== 'curse');
+      if (pool.length > 0) {
+        const cardDef = rng.pick(pool);
+        next.deck.push(makeCardInstance(cardDef.id));
+        msgKo.push(`카드 획득: ${cardDef.name}`);
+        msgEn.push(`Card gained: ${cardDef.nameEn ?? cardDef.name}`);
+      }
+    }
+    if (choice.upgradeRandomCard) {
+      const eligible = next.deck.filter((c) => !c.upgraded && getCardDef(c.defId).upgrade);
+      if (eligible.length > 0) {
+        const picked = rng.pick(eligible);
+        picked.upgraded = true;
+        const cardDef = getCardDef(picked.defId);
+        msgKo.push(`카드 강화: ${cardDef.name}`);
+        msgEn.push(`Card upgraded: ${cardDef.nameEn ?? cardDef.name}`);
+      }
     }
   }
-  if (choice.relicId === 'random') {
-    const relicId = generateRelicReward(next, rng);
-    if (relicId) next = addRelic(next, relicId);
-  } else if (choice.relicId) {
-    next = addRelic(next, choice.relicId);
-  }
+
   if (choice.addCurse) {
-    next.deck.push(makeCardInstance(choice.addCurse));
+    const curseChance = choice.curseChance ?? 1;
+    if (rng.next() < curseChance) {
+      next.deck.push(makeCardInstance(choice.addCurse));
+      const cardDef = getCardDef(choice.addCurse);
+      msgKo.push(`저주 획득: ${cardDef.name}`);
+      msgEn.push(`Curse gained: ${cardDef.nameEn ?? cardDef.name}`);
+    }
   }
-  return markNodeCompleted(next);
+
+  if (msgKo.length === 0) {
+    msgKo.push(success ? '아무 일도 일어나지 않았다.' : '실패했다. 아무것도 얻지 못했다.');
+    msgEn.push(success ? 'Nothing happened.' : 'It failed — you got nothing.');
+  }
+
+  return { run: markNodeCompleted(next), success, messageKo: msgKo.join(' · '), messageEn: msgEn.join(' · ') };
 }
 
 // ---------- 포션 사용(비전투) ----------

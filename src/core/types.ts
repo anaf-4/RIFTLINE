@@ -230,7 +230,20 @@ export interface EventChoice {
   relicId?: string;
   removeCardPrompt?: boolean;
   addCurse?: string;
+  /** addCurse가 항상 적용되지 않고 확률적으로만 적용될 때 (미지정 시 addCurse는 항상 적용) */
+  curseChance?: number;
   requiresGold?: number;
+  /** 지정 시 이 확률로만 goldDelta/effects/relicId/gainRandomCard/upgradeRandomCard가 적용된다 (실패 시 아무 효과 없음) */
+  successChance?: number;
+  gainRandomCard?: boolean;
+  upgradeRandomCard?: boolean;
+}
+
+export interface EventResult {
+  run: RunState;
+  success: boolean;
+  messageKo: string;
+  messageEn: string;
 }
 
 export interface EventDef {
@@ -278,5 +291,6 @@ export interface GameState {
   run: RunState | null;
   rewardOptions?: CardInstance[];
   activeEvent?: EventDef;
+  eventResult?: { messageKo: string; messageEn: string; success: boolean };
   shopStock?: ShopStock;
 }

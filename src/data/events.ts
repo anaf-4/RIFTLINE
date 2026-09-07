@@ -8,7 +8,7 @@ export const events: EventDef[] = [
     textEn: 'An old shrine leaks rift-light. Touching it feels like it would provoke something.',
     choices: [
       { id: 'pray', text: '기도한다 (체력 12 회복)', textEn: 'Pray (restore 12 HP)', effects: [{ op: 'heal', value: 12 }] },
-      { id: 'take', text: '제단의 파편을 가져간다 (골드 +40, 저주 획득 위험)', textEn: 'Take a shard (+40 gold, risk of a curse)', effects: [], goldDelta: 40, addCurse: 'curse_rift_shard' },
+      { id: 'take', text: '제단의 파편을 가져간다 (골드 +40, 50% 확률로 저주 획득)', textEn: 'Take a shard (+40 gold, 50% chance of a curse)', effects: [], goldDelta: 40, addCurse: 'curse_rift_shard', curseChance: 0.5 },
       { id: 'leave', text: '떠난다', textEn: 'Leave', effects: [] },
     ],
   },
@@ -19,7 +19,16 @@ export const events: EventDef[] = [
     textEn: 'A strange merchant stands with a heavy pack. "I have something rare, if you can pay."',
     choices: [
       { id: 'buy_relic', text: '유물을 구매한다 (골드 -60)', textEn: 'Buy a relic (-60 gold)', effects: [], requiresGold: 60, goldDelta: -60, relicId: 'random' },
-      { id: 'haggle', text: '가격을 흥정한다 (50% 확률로 실패)', textEn: 'Haggle (50% chance to fail)', effects: [] },
+      {
+        id: 'haggle',
+        text: '가격을 흥정한다 (골드 30, 50% 확률로 유물 획득)',
+        textEn: 'Haggle (30 gold, 50% chance to get a relic)',
+        effects: [],
+        requiresGold: 30,
+        goldDelta: -30,
+        relicId: 'random',
+        successChance: 0.5,
+      },
       { id: 'ignore', text: '무시하고 지나간다', textEn: 'Ignore and move on', effects: [] },
     ],
   },
@@ -29,7 +38,7 @@ export const events: EventDef[] = [
     text: '피투성이 여행자가 쓰러져 있다. 도울 수도, 소지품을 뒤질 수도 있다.',
     textEn: 'A bloodied traveler lies collapsed. You could help them, or search their belongings.',
     choices: [
-      { id: 'help', text: '치료해준다 (체력 -8, 카드 1장 강화)', textEn: 'Treat their wounds (-8 HP, upgrade a card)', effects: [{ op: 'heal', value: -8 }] },
+      { id: 'help', text: '치료해준다 (체력 -8, 카드 1장 강화)', textEn: 'Treat their wounds (-8 HP, upgrade a card)', effects: [{ op: 'heal', value: -8 }], upgradeRandomCard: true },
       { id: 'loot', text: '소지품을 뒤진다 (골드 +30)', textEn: 'Search their belongings (+30 gold)', effects: [], goldDelta: 30 },
       { id: 'leave', text: '지나친다', textEn: 'Walk past', effects: [] },
     ],
@@ -51,7 +60,7 @@ export const events: EventDef[] = [
     text: '사슬로 감긴 낡은 상자. 억지로 열 수도, 열쇠를 찾아볼 수도 있다.',
     textEn: 'An old chest bound in chains. You could force it open or look for a key.',
     choices: [
-      { id: 'force', text: '억지로 연다 (체력 -6, 카드 획득)', textEn: 'Force it open (-6 HP, gain a card)', effects: [{ op: 'heal', value: -6 }] },
+      { id: 'force', text: '억지로 연다 (체력 -6, 카드 획득)', textEn: 'Force it open (-6 HP, gain a card)', effects: [{ op: 'heal', value: -6 }], gainRandomCard: true },
       { id: 'skip', text: '포기한다', textEn: 'Give up on it', effects: [] },
     ],
   },
@@ -61,7 +70,7 @@ export const events: EventDef[] = [
     text: '균열 안쪽에서 목소리가 들린다. "더 강해지고 싶은가, 아니면 안전하고 싶은가."',
     textEn: 'A voice speaks from within the rift. "Do you wish for power, or for safety?"',
     choices: [
-      { id: 'power', text: '힘을 택한다 (저주 1장, 카드 1장 강화)', textEn: 'Choose power (gain a curse, upgrade a card)', effects: [], addCurse: 'curse_rift_shard' },
+      { id: 'power', text: '힘을 택한다 (저주 1장, 카드 1장 강화)', textEn: 'Choose power (gain a curse, upgrade a card)', effects: [], addCurse: 'curse_rift_shard', upgradeRandomCard: true },
       { id: 'safety', text: '안전을 택한다 (최대 HP +5)', textEn: 'Choose safety (+5 max HP)', effects: [{ op: 'modifyStat', stat: 'maxHp', value: 5 }] },
     ],
   },

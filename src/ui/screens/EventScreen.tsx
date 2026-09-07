@@ -1,13 +1,33 @@
 import { useGameStore } from '../../store/gameStore';
-import { useLocale } from '../../i18n/useT';
+import { useT, useLocale } from '../../i18n/useT';
 
 export default function EventScreen() {
   const game = useGameStore((s) => s.game);
   const eventChoose = useGameStore((s) => s.eventChoose);
+  const eventResultAck = useGameStore((s) => s.eventResultAck);
+  const t = useT();
   const locale = useLocale();
-  const ev = game.activeEvent;
   const run = game.run;
-  if (!ev || !run) return null;
+  if (!run) return null;
+
+  if (game.eventResult) {
+    const { messageKo, messageEn, success } = game.eventResult;
+    return (
+      <div className="game-viewport">
+        <div className="centered-screen" style={{ maxWidth: 640, margin: '0 auto' }}>
+          <div className="title-sub" style={{ fontSize: 16, lineHeight: 1.6, color: success ? 'var(--text-main)' : 'var(--hp)' }}>
+            {locale === 'en' ? messageEn : messageKo}
+          </div>
+          <button className="btn btn-accent" onClick={eventResultAck}>
+            {t('proceed')}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const ev = game.activeEvent;
+  if (!ev) return null;
 
   return (
     <div className="game-viewport">
