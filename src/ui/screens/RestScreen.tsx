@@ -15,6 +15,7 @@ export default function RestScreen() {
   const restImprint = useGameStore((s) => s.restImprint);
   const [mode, setMode] = useState<Mode>('menu');
   const [pickedCardUid, setPickedCardUid] = useState<string | null>(null);
+  const [previewUid, setPreviewUid] = useState<string | null>(null);
   const t = useT();
   const locale = useLocale();
   const imprintNames = locale === 'ko' ? IMPRINT_NAMES : IMPRINT_NAMES_EN;
@@ -48,14 +49,14 @@ export default function RestScreen() {
         </div>
       )}
 
-      {mode === 'upgrade' && (
+      {mode === 'upgrade' && !previewUid && (
         <>
           <div className="title-sub" style={{ marginBottom: 10 }}>
             {t('choose_upgrade_card')}
           </div>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
             {upgradeable.map((c) => (
-              <div key={c.uid} onClick={() => restUpgrade(c.uid)} style={{ cursor: 'pointer' }}>
+              <div key={c.uid} onClick={() => setPreviewUid(c.uid)} style={{ cursor: 'pointer' }}>
                 <Card defId={c.defId} upgraded={false} size="small" />
               </div>
             ))}
@@ -63,6 +64,36 @@ export default function RestScreen() {
           <button className="btn" onClick={() => setMode('menu')}>
             {t('cancel')}
           </button>
+        </>
+      )}
+
+      {mode === 'upgrade' && previewUid && (
+        <>
+          <div className="title-sub" style={{ marginBottom: 10 }}>
+            {t('upgrade_preview')}
+          </div>
+          <div style={{ display: 'flex', gap: 20, alignItems: 'center', marginBottom: 20 }}>
+            <Card defId={upgradeable.find((c) => c.uid === previewUid)!.defId} upgraded={false} />
+            <div style={{ fontSize: 28, color: 'var(--accent)' }}>→</div>
+            <div style={{ position: 'relative' }}>
+              <div className="rl-upgrade-glow" />
+              <Card defId={upgradeable.find((c) => c.uid === previewUid)!.defId} upgraded={true} />
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 16 }}>
+            <button
+              className="btn btn-accent"
+              onClick={() => {
+                restUpgrade(previewUid);
+                setPreviewUid(null);
+              }}
+            >
+              {t('confirm_upgrade')}
+            </button>
+            <button className="btn" onClick={() => setPreviewUid(null)}>
+              {t('cancel')}
+            </button>
+          </div>
         </>
       )}
 

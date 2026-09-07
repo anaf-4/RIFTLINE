@@ -10,10 +10,10 @@ export const act3Enemies: EnemyDef[] = [
     hp: [130, 145],
     canMove: false,
     intents: [
-      { type: 'attack', value: 22, weight: 35 },
+      { type: 'attack', value: 22, weight: 35, ranged: true },
       { type: 'debuff', status: 'weak', value: 2, weight: 25 },
       { type: 'debuff', status: 'vulnerable', value: 2, weight: 20 },
-      { type: 'attack', value: 11, times: 2, weight: 20 },
+      { type: 'attack', value: 11, times: 2, weight: 20, ranged: true },
     ],
   },
   {
@@ -39,7 +39,7 @@ export const act3Enemies: EnemyDef[] = [
     hp: [110, 125],
     canMove: true,
     intents: [
-      { type: 'attack', value: 14, weight: 40 },
+      { type: 'attack', value: 14, weight: 40, ranged: true },
       { type: 'debuff', status: 'poison', value: 8, weight: 40 },
       { type: 'move', weight: 20 },
     ],

@@ -24,7 +24,7 @@ export const act2Enemies: EnemyDef[] = [
     hp: [70, 85],
     canMove: false,
     intents: [
-      { type: 'attack', value: 11, weight: 40 },
+      { type: 'attack', value: 11, weight: 40, ranged: true },
       { type: 'debuff', status: 'weak', value: 2, weight: 30 },
       { type: 'debuff', status: 'vulnerable', value: 2, weight: 30 },
     ],
@@ -52,7 +52,7 @@ export const act2Enemies: EnemyDef[] = [
     hp: [60, 75],
     canMove: false,
     intents: [
-      { type: 'attack', value: 8, weight: 40 },
+      { type: 'attack', value: 8, weight: 40, ranged: true },
       { type: 'debuff', status: 'poison', value: 5, weight: 60 },
     ],
   },

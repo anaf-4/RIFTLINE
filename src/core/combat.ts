@@ -230,10 +230,20 @@ function effectiveRange(def: ReturnType<typeof getCardDef>, inst: CardInstance) 
   return def.range;
 }
 
+function cardNeedsSingleTarget(def: ReturnType<typeof getCardDef>, upgraded: boolean): boolean {
+  const effects = upgraded && def.upgrade ? def.upgrade.effects : def.effects;
+  return effects.some(
+    (e) =>
+      e.target === 'enemy_single' &&
+      (e.op === 'damage' || e.op === 'damageMulti' || e.op === 'applyStatus' || e.op === 'elementMark' || e.op === 'pull' || e.op === 'push')
+  );
+}
+
 export function validTargetsForCard(state: CombatState, cardUid: string): string[] {
   const inst = state.hand.find((c) => c.uid === cardUid);
   if (!inst) return [];
   const def = getCardDef(inst.defId);
+  if (!cardNeedsSingleTarget(def, inst.upgraded)) return [];
   const living = livingEnemies(state);
   const range = effectiveRange(def, inst);
   if (range === 'melee') return living.filter((e) => e.line === 'front').map((e) => e.uid);
@@ -711,6 +721,12 @@ function runEnemyTurn(state: CombatState, rng: Rng) {
 function resolveIntent(state: CombatState, enemy: EnemyInstance, intent: IntentDef, rng: Rng) {
   switch (intent.type) {
     case 'attack': {
+      // 플레이어의 근접 카드가 전열에서만 유효한 것과 대칭으로, 원거리(ranged) 표시가 없는 공격은
+      // 적이 후열에 있으면(밀려났거나 스스로 이동) 닿지 않는다.
+      if (enemy.line === 'back' && !intent.ranged) {
+        log(state, `${enemy.name}의 공격이 후열이라 닿지 않았다.`);
+        break;
+      }
       const times = intent.times ?? 1;
       for (let i = 0; i < times; i++) {
         applyDamageEffect(state, { op: 'damage', value: intent.value ?? 0 }, intent.value ?? 0, {

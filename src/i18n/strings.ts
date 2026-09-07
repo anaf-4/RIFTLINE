@@ -15,7 +15,7 @@ export const strings = {
     move: '이동',
     end_turn: '턴 종료',
     choose_target: '대상을 선택하세요 (배경을 클릭하면 취소)',
-    deck: '덱',
+    deck: '뽑을 패',
     discard: '버림',
     exhaust: '소멸',
     gold: '골드',
@@ -70,6 +70,8 @@ export const strings = {
     got_it: '확인',
     update_available: (v: string) => `새 버전 ${v}이 있습니다`,
     update_download: '다운로드',
+    upgrade_preview: '강화 전후 비교',
+    confirm_upgrade: '이 카드로 강화하기',
   },
   en: {
     title_subtitle: 'RIFTLINE — the reach of a single card decides the fight',
@@ -87,7 +89,7 @@ export const strings = {
     move: 'Move',
     end_turn: 'End Turn',
     choose_target: 'Choose a target (click the background to cancel)',
-    deck: 'Deck',
+    deck: 'Draw',
     discard: 'Discard',
     exhaust: 'Exhaust',
     gold: 'Gold',
@@ -142,6 +144,8 @@ export const strings = {
     got_it: 'Got it',
     update_available: (v: string) => `Version ${v} is available`,
     update_download: 'Download',
+    upgrade_preview: 'Before / After',
+    confirm_upgrade: 'Upgrade to this',
   },
 } as const;
 

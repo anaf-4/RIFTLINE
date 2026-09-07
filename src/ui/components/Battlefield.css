@@ -66,6 +66,8 @@
 }
 
 .rl-enemy {
+  position: relative;
+  overflow: visible;
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 10px;
@@ -75,6 +77,33 @@
   text-align: center;
   transition: filter 0.15s;
   flex-shrink: 0;
+}
+
+.rl-float-text {
+  position: absolute;
+  top: 38%;
+  left: 50%;
+  font-size: 17px;
+  font-weight: 800;
+  text-shadow: 0 1px 3px black, 0 0 6px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+  animation: rl-float-up 900ms ease-out forwards;
+  z-index: 60;
+}
+
+@keyframes rl-float-up {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 0) scale(0.8);
+  }
+  15% {
+    opacity: 1;
+    transform: translate(-50%, -8px) scale(1.15);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -48px) scale(1);
+  }
 }
 
 .rl-enemy-dead {
@@ -91,6 +120,40 @@
 
 .rl-enemy-targetable:hover {
   filter: brightness(1.2);
+}
+
+.rl-info-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.5);
+  color: var(--text-sub);
+  font-size: 11px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 40;
+  padding: 0;
+}
+
+.rl-info-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.rl-line-badge {
+  font-size: 9px;
+  color: var(--accent);
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+  padding: 1px 4px;
+  margin-bottom: 4px;
+  white-space: nowrap;
 }
 
 .rl-enemy-name {
@@ -165,6 +228,18 @@
   background: rgba(0, 0, 0, 0.3);
   border-radius: 6px;
   padding: 2px 6px;
+  position: relative;
+}
+
+.rl-intent-miss {
+  opacity: 0.5;
+  filter: grayscale(0.6);
+}
+
+.rl-intent-miss-x {
+  color: var(--hp);
+  font-size: 13px;
+  font-weight: 800;
 }
 
 @keyframes rl-shake {

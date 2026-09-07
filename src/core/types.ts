@@ -101,6 +101,8 @@ export interface IntentDef {
   times?: number;
   status?: StatusId;
   weight: number;
+  /** true면 후열에서도 공격이 유효하다 (원거리). false/미지정이면 근접 취급으로 후열에서는 공격이 닿지 않는다. */
+  ranged?: boolean;
 }
 
 export interface EnemyDef {

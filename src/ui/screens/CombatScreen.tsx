@@ -4,6 +4,7 @@ import Hand from '../components/Hand';
 import Battlefield from '../components/Battlefield';
 import PlayZone, { type FlyingCard } from '../components/PlayZone';
 import TutorialOverlay from '../components/TutorialOverlay';
+import GlossaryModal from '../components/GlossaryModal';
 import { useT, useLocale } from '../../i18n/useT';
 import '../components/Battlefield.css';
 import './CombatScreen.css';
@@ -29,6 +30,8 @@ export default function CombatScreen() {
   const [flying, setFlying] = useState<FlyingCard[]>([]);
   const [playerShake, setPlayerShake] = useState(false);
   const [enemyShake, setEnemyShake] = useState<string | null>(null);
+  const [endingTurn, setEndingTurn] = useState(false);
+  const [showGlossary, setShowGlossary] = useState(false);
   const prevPlayerHp = useRef<number | null>(null);
   const prevEnemyHp = useRef<Map<string, number>>(new Map());
 
@@ -104,8 +107,13 @@ export default function CombatScreen() {
           <span>{t('discard')} {combat.discardPile.length}</span>
           <span>{t('exhaust')} {combat.exhaustPile.length}</span>
           <span>{t('gold')} {p.gold}</span>
+          <button className="rl-glossary-btn" onClick={() => setShowGlossary(true)}>
+            ❔
+          </button>
         </div>
       </div>
+
+      {showGlossary && <GlossaryModal locale={locale} onClose={() => setShowGlossary(false)} />}
 
       <div className="rl-combat-battlefield-zone" onClick={() => isTargeting && cancelTargeting()}>
         <Battlefield
@@ -153,12 +161,26 @@ export default function CombatScreen() {
               ))}
             </div>
           </div>
-          <button className="btn btn-accent" disabled={combat.turnPhase !== 'player'} onClick={endTurn}>
+          <button
+            className="btn btn-accent"
+            disabled={combat.turnPhase !== 'player' || endingTurn}
+            onClick={() => {
+              if (combat.hand.length === 0) {
+                endTurn();
+                return;
+              }
+              setEndingTurn(true);
+              setTimeout(() => {
+                endTurn();
+                setEndingTurn(false);
+              }, 220);
+            }}
+          >
             {t('end_turn')}
           </button>
         </div>
 
-        <div className="rl-hand-dock">
+        <div className={`rl-hand-dock ${endingTurn ? 'rl-hand-discarding' : ''}`}>
           <Hand
             hand={combat.hand}
             combat={combat}

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { ClassId, CombatState, EnemyInstance, Line } from '../../core/types';
 import { useOrientation } from '../orientation';
 import StatusBadges from './StatusBadges';
+import EnemyInfoModal from './EnemyInfoModal';
 import './Battlefield.css';
 
 const CLASS_LABEL_KO: Record<ClassId, string> = { warden: '파수병', ember: '술사', courier: '밀사', scribe: '각인자' };
@@ -32,6 +33,11 @@ function intentValue(intent: CombatState['enemies'][number]['currentIntent']): s
   if (intent.type === 'attack') return `${intent.value}${intent.times && intent.times > 1 ? ` ×${intent.times}` : ''}`;
   if (intent.type === 'buff' || intent.type === 'debuff') return `${intent.value ?? ''}`;
   return '';
+}
+
+// 후열에 있는 비원거리(근접) 적은 공격 의도가 있어도 실제로는 닿지 않는다 — 플레이어가 알 수 있도록 표시
+function intentWillMiss(e: EnemyInstance): boolean {
+  return e.line === 'back' && e.currentIntent?.type === 'attack' && !e.currentIntent.ranged;
 }
 
 function enemyCategoryFor(defId: string): 'beast' | 'undead' | 'golem' | 'humanoid' | 'boss' {
@@ -96,6 +102,7 @@ export default function Battlefield({
   const classLabel = locale === 'ko' ? CLASS_LABEL_KO[className] : CLASS_LABEL_EN[className];
   const lineLabel = (line: Line) => (locale === 'ko' ? (line === 'front' ? '전열' : '후열') : line === 'front' ? 'Front' : 'Back');
 
+  const [infoEnemyUid, setInfoEnemyUid] = useState<string | null>(null);
   const [playerWalkFlash, setPlayerWalkFlash] = useState(false);
   const [playerAttackFlash, setPlayerAttackFlash] = useState(false);
   const [enemyWalkFlash, setEnemyWalkFlash] = useState<string | null>(null);
@@ -106,6 +113,69 @@ export default function Battlefield({
   const prevEnemyLines = useRef<Map<string, Line>>(new Map());
   const prevTurn = useRef(combat.turn);
   const prevAttackSeq = useRef(attackSeq);
+
+  // 상호작용 결과(피해/회복/방어막 획득)를 카드 위에 잠깐 띄워 보여주는 플로팅 텍스트
+  interface FloatEntry {
+    id: number;
+    text: string;
+    color: string;
+  }
+  const [floats, setFloats] = useState<Map<string, FloatEntry[]>>(new Map());
+  const floatIdRef = useRef(0);
+  const prevPlayerHp = useRef(player.hp);
+  const prevPlayerBlock = useRef(player.block);
+  const prevEnemyHp = useRef<Map<string, number>>(new Map());
+  const prevEnemyBlock = useRef<Map<string, number>>(new Map());
+
+  function pushFloat(uid: string, text: string, color: string) {
+    const id = ++floatIdRef.current;
+    setFloats((m) => {
+      const next = new Map(m);
+      next.set(uid, [...(next.get(uid) ?? []), { id, text, color }]);
+      return next;
+    });
+    setTimeout(() => {
+      setFloats((m) => {
+        const next = new Map(m);
+        const arr = (next.get(uid) ?? []).filter((f) => f.id !== id);
+        if (arr.length) next.set(uid, arr);
+        else next.delete(uid);
+        return next;
+      });
+    }, 900);
+  }
+
+  useEffect(() => {
+    const hpDelta = player.hp - prevPlayerHp.current;
+    if (hpDelta < 0) pushFloat('player', `${hpDelta}`, 'var(--hp)');
+    else if (hpDelta > 0) pushFloat('player', `+${hpDelta}`, '#7ee787');
+    prevPlayerHp.current = player.hp;
+
+    const blockDelta = player.block - prevPlayerBlock.current;
+    if (blockDelta > 0) pushFloat('player', `🛡+${blockDelta}`, 'var(--block)');
+    prevPlayerBlock.current = player.block;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [player.hp, player.block]);
+
+  useEffect(() => {
+    for (const e of combat.enemies) {
+      const prevHp = prevEnemyHp.current.get(e.uid);
+      if (prevHp !== undefined) {
+        const d = e.hp - prevHp;
+        if (d < 0) pushFloat(e.uid, `${d}`, 'var(--hp)');
+        else if (d > 0) pushFloat(e.uid, `+${d}`, '#7ee787');
+      }
+      prevEnemyHp.current.set(e.uid, e.hp);
+
+      const prevBlock = prevEnemyBlock.current.get(e.uid);
+      if (prevBlock !== undefined) {
+        const bd = e.block - prevBlock;
+        if (bd > 0) pushFloat(e.uid, `🛡+${bd}`, 'var(--block)');
+      }
+      prevEnemyBlock.current.set(e.uid, e.block);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [combat.enemies]);
 
   // 플레이어 라인 이동 → 걷기 포즈 잠깐
   useEffect(() => {
@@ -177,11 +247,22 @@ export default function Battlefield({
     return 'idle';
   }
 
+  const backReduction = combat.relics.includes('rift_compass') ? 40 : 25;
+  const lineBadge =
+    player.line === 'front'
+      ? locale === 'ko'
+        ? '⚔ 전 카드 사용 가능 · 피해 100%'
+        : '⚔ All cards usable · 100% dmg taken'
+      : locale === 'ko'
+        ? `🛡 근접·관통 불가 · 피해 -${backReduction}%`
+        : `🛡 No Melee/Pierce · -${backReduction}% dmg taken`;
+
   const playerCard = (
     <div className={`rl-enemy rl-player ${playerShake ? 'rl-shake' : ''}`}>
       <div className="rl-enemy-name">
         {classLabel} ({lineLabel(player.line)})
       </div>
+      <div className="rl-line-badge">{lineBadge}</div>
       <div
         className="rl-enemy-sprite rl-player-sprite"
         style={{ backgroundImage: `url(${playerSpriteUrl(className, playerPose())})` }}
@@ -197,6 +278,11 @@ export default function Battlefield({
       </div>
       {player.block > 0 && <div className="rl-block tabular">🛡 {player.block}</div>}
       <StatusBadges statuses={player.statuses} />
+      {(floats.get('player') ?? []).map((f) => (
+        <div key={f.id} className="rl-float-text" style={{ color: f.color }}>
+          {f.text}
+        </div>
+      ))}
     </div>
   );
 
@@ -208,6 +294,17 @@ export default function Battlefield({
       }`}
       onClick={() => targetable.has(e.uid) && onTarget(e.uid)}
     >
+      {e.hp > 0 && (
+        <button
+          className="rl-info-btn"
+          onClick={(ev) => {
+            ev.stopPropagation();
+            setInfoEnemyUid(e.uid);
+          }}
+        >
+          ℹ
+        </button>
+      )}
       <div className="rl-enemy-name">{e.name}</div>
       <div className="rl-enemy-sprite" style={{ backgroundImage: `url(${enemySpriteUrl(e.defId, enemyPose(e))})` }} />
       <div className="rl-hpbar">
@@ -238,11 +335,20 @@ export default function Battlefield({
         </div>
       )}
       {e.hp > 0 && (
-        <div className="rl-intent">
+        <div
+          className={`rl-intent ${intentWillMiss(e) ? 'rl-intent-miss' : ''}`}
+          title={intentWillMiss(e) ? (locale === 'ko' ? '후열이라 공격이 닿지 않는다' : "Can't reach from the back line") : undefined}
+        >
           <span>{intentIcon(e.currentIntent)}</span>
           <span className="tabular">{intentValue(e.currentIntent)}</span>
+          {intentWillMiss(e) && <span className="rl-intent-miss-x">✗</span>}
         </div>
       )}
+      {(floats.get(e.uid) ?? []).map((f) => (
+        <div key={f.id} className="rl-float-text" style={{ color: f.color }}>
+          {f.text}
+        </div>
+      ))}
     </div>
   );
 
@@ -253,6 +359,12 @@ export default function Battlefield({
       <div className="rl-rift-divider" />
       <div className="rl-slot rl-slot-efront">{frontEnemies.map(renderEnemy)}</div>
       <div className="rl-slot rl-slot-eback">{backEnemies.map(renderEnemy)}</div>
+      {infoEnemyUid &&
+        (() => {
+          const infoEnemy = combat.enemies.find((e) => e.uid === infoEnemyUid);
+          if (!infoEnemy) return null;
+          return <EnemyInfoModal enemy={infoEnemy} locale={locale} onClose={() => setInfoEnemyUid(null)} />;
+        })()}
     </div>
   );
 }

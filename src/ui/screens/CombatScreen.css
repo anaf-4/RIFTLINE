@@ -16,7 +16,28 @@
 
 .rl-header-stats {
   display: flex;
+  align-items: center;
   gap: 14px;
+}
+
+.rl-glossary-btn {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--text-sub);
+  font-size: 11px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.rl-glossary-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
 .rl-combat-battlefield-zone {
@@ -96,6 +117,12 @@
   justify-content: center;
   align-items: flex-end;
   overflow: visible;
+}
+
+.rl-hand-discarding .rl-hand {
+  transition: transform 200ms ease-in, opacity 200ms ease-in;
+  transform: translateY(60px) scale(0.85);
+  opacity: 0;
 }
 
 .rl-outcome-overlay {

@@ -17,7 +17,8 @@
 }
 
 .rl-hand-slot:hover {
-  transform: rotate(var(--fan-rot, 0deg)) translateY(-18px);
+  transform: rotate(var(--fan-rot, 0deg)) translateY(-30px) scale(1.08);
+  z-index: 100 !important;
 }
 
 @keyframes rl-draw-in {
