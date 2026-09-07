@@ -1,0 +1,44 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+dist-electron
+release
+*.local
+
+# Capacitor
+.capacitor
+
+# Android — 프로젝트 자체는 커밋하되 빌드 산출물/머신별 파일은 제외
+android/local.properties
+android/.gradle/
+android/build/
+android/app/build/
+android/captures/
+android/.idea/
+android/*.iml
+android/app/*.iml
+android/app/src/main/assets/public/
+android/app/src/main/assets/capacitor.config.json
+
+# 세이브 데이터 (개발용)
+*.sav
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

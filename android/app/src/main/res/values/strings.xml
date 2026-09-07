@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">RIFTLINE</string>
+    <string name="title_activity_main">RIFTLINE</string>
+    <string name="package_name">com.teamcraft.riftline</string>
+    <string name="custom_url_scheme">com.teamcraft.riftline</string>
+</resources>

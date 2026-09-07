@@ -1,0 +1,85 @@
+.app-root {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-deep);
+}
+
+.game-viewport {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: linear-gradient(180deg, var(--bg-mid), var(--bg-deep));
+  overflow: hidden;
+  border-radius: 4px;
+  box-shadow: 0 0 60px rgba(0, 0, 0, 0.6);
+}
+
+.centered-screen {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  text-align: center;
+}
+
+.title-logo {
+  font-size: 64px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-main);
+  text-shadow: 0 0 30px rgba(232, 181, 77, 0.35);
+}
+
+.title-sub {
+  color: var(--text-sub);
+  font-size: 16px;
+  letter-spacing: 0.05em;
+}
+
+.btn {
+  padding: 12px 28px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text-main);
+  font-size: 16px;
+  font-weight: 600;
+  transition: transform 0.12s ease, background 0.12s ease;
+}
+
+.btn:hover:not(:disabled) {
+  background: #303645;
+  transform: translateY(-1px);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-accent {
+  background: var(--accent);
+  color: #201a08;
+  border-color: var(--accent);
+}
+
+.btn-accent:hover:not(:disabled) {
+  background: #f4c661;
+}
+
+.rl-class-portrait {
+  width: 64px;
+  height: 84px;
+  border-radius: 6px;
+  background-size: cover;
+  background-position: center top;
+  background-color: #1a1a22;
+  margin-bottom: 10px;
+  border: 1px solid var(--border);
+}

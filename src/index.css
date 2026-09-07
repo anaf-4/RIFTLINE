@@ -1,0 +1,59 @@
+:root {
+  --bg-deep: #12141a;
+  --bg-mid: #1c2029;
+  --panel: #262b36;
+  --border: #3a4150;
+  --text-main: #e8eaed;
+  --text-sub: #9aa0ac;
+
+  --card-attack: #c4453c;
+  --card-skill: #3d7aa8;
+  --card-power: #8557a8;
+  --card-curse: #1a1a1a;
+
+  --energy: #f0c040;
+  --hp: #d14545;
+  --block: #7fa8c9;
+  --accent: #e8b54d;
+
+  color-scheme: dark;
+  font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui,
+    'Malgun Gothic', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg-deep);
+  color: var(--text-main);
+  overflow: hidden;
+  user-select: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+body.no-anim * {
+  animation-duration: 0.001ms !important;
+  transition-duration: 0.001ms !important;
+}
