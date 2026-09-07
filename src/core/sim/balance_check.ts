@@ -12,16 +12,41 @@ import {
   enterAct,
   reachableNodes,
   restHeal,
+  upgradeCard,
+  generateShopStock,
+  buyRelic,
+  buyPotion,
 } from '../run';
-import { playCard, endPlayerTurn, canPlayCard, validTargetsForCard, useMoveAction } from '../combat';
+import { playCard, endPlayerTurn, canPlayCard, validTargetsForCard, useMoveAction, usePotion } from '../combat';
 import { eventMap } from '../../data/events';
-import type { ClassId, RunState, CombatState } from '../types';
+import { getCardDef } from '../../data/cards';
+import { potionMap } from '../../data/potions';
+import type { ClassId, RunState, CombatState, MapNode } from '../types';
 import type { Rng } from '../rng';
 
+// 맵 이동: 체력이 낮으면 휴식을 최우선으로, 그 다음은 전투/이벤트/상점 순으로 고른다
+// (상점/휴식을 그냥 지나치고 곧장 다음 전투로 뛰어드는 게 이전 버전의 가장 큰 문제였다).
+function pickNode(reachable: MapNode[], run: RunState, rng: Rng): MapNode {
+  const hpRatio = run.hp / run.maxHp;
+  if (hpRatio < 0.85) {
+    const rest = reachable.find((n) => n.type === 'rest');
+    if (rest) return rest;
+  }
+  if (run.gold >= 80) {
+    const shop = reachable.find((n) => n.type === 'shop');
+    if (shop) return shop;
+  }
+  const nonElite = reachable.filter((n) => n.type !== 'elite' || hpRatio > 0.8);
+  return rng.pick(nonElite.length > 0 ? nonElite : reachable);
+}
+
 function scoreCard(defId: string, hpRatio: number): number {
-  // 체력이 낮으면 방어/회복류를 우선시하는 아주 단순한 휴리스틱
-  const isBlockish = /block|dodge|shield|ward|guard|absorb|stealth/i.test(defId);
-  const isHealish = /heal|recovery|absorb/i.test(defId);
+  // 체력이 낮으면 방어/회복류를 우선시하는 아주 단순한 휴리스틱.
+  // 카드 이름 패턴 매칭은 warden_bulwark처럼 실제로 방어 카드인데 매칭이 안 되는 경우가 있어
+  // 효과 목록(op)을 직접 보고 판단한다.
+  const effects = getCardDef(defId).effects;
+  const isBlockish = effects.some((e) => e.op === 'block');
+  const isHealish = effects.some((e) => e.op === 'heal' && (e.value ?? 0) > 0);
   let score = 0;
   if (hpRatio < 0.5 && (isBlockish || isHealish)) score += 10;
   if (hpRatio >= 0.5) score += 1; // 평소엔 아무 카드나 (공격 우선 경향)
@@ -31,6 +56,18 @@ function scoreCard(defId: string, hpRatio: number): number {
 function playOneTurn(run: RunState, rng: Rng): RunState {
   let r = run;
   if (!r.combat) return r;
+
+  // 체력이 위험하면 회복 포션부터 쓴다
+  if (r.combat.player.hp / r.combat.player.maxHp < 0.35) {
+    const potionSlot = r.potions.findIndex((id) => id && (potionMap[id]?.effects ?? []).some((e) => e.op === 'heal' && (e.value ?? 0) > 0));
+    if (potionSlot !== -1) {
+      const potionId = r.potions[potionSlot]!;
+      const combat = usePotion(r.combat, potionMap[potionId].effects);
+      const potions = r.potions.slice();
+      potions[potionSlot] = null;
+      r = { ...r, combat, potions };
+    }
+  }
 
   // 체력이 낮고 후열 회피가 가능하면 후퇴한다 (밀사/술사처럼 후열 의존 클래스에게 특히 중요)
   const hpRatioStart = r.combat.player.hp / r.combat.player.maxHp;
@@ -97,7 +134,7 @@ function simulateRun(className: ClassId, ascension: number, seed: number): SimRe
     guardNodes++;
     const reachable = reachableNodes(run);
     if (reachable.length === 0) return { win: false, actReached: run.act, turnsTotal, deathCause: 'dead-end', combatsCleared, hpHistory };
-    const pick = rng.pick(reachable);
+    const pick = pickNode(reachable, run, rng);
     run = travelTo(run, pick.id, rng);
     const node = currentNode(run)!;
 
@@ -129,7 +166,30 @@ function simulateRun(className: ClassId, ascension: number, seed: number): SimRe
         run.gold = Math.max(0, run.gold + (choice.goldDelta ?? 0));
       }
     } else if (node.type === 'rest') {
-      run = restHeal(run);
+      if (run.hp / run.maxHp < 0.9) {
+        run = restHeal(run);
+      } else {
+        const upgradeable = run.deck.filter((c) => !c.upgraded && getCardDef(c.defId).upgrade);
+        if (upgradeable.length > 0) run = upgradeCard(run, rng.pick(upgradeable).uid);
+        else run = restHeal(run);
+      }
+    } else if (node.type === 'shop') {
+      const stock = generateShopStock(run, rng);
+      // 저렴한 순으로 정렬해 살 수 있는 유물을 최대한 산다
+      const relicOrder = stock.relicPrices
+        .map((price, i) => ({ price, i }))
+        .sort((a, b) => a.price - b.price);
+      for (const { i } of relicOrder) {
+        if (run.gold >= stock.relicPrices[i]) run = buyRelic(run, stock, i);
+      }
+      if (run.potions.includes(null)) {
+        const potionOrder = stock.potionPrices
+          .map((price, i) => ({ price, i }))
+          .sort((a, b) => a.price - b.price);
+        for (const { i } of potionOrder) {
+          if (run.gold >= stock.potionPrices[i] && run.potions.includes(null)) run = buyPotion(run, stock, i);
+        }
+      }
     }
   }
   return { win: false, actReached: run.act, turnsTotal, deathCause: 'guard-limit', combatsCleared, hpHistory };
