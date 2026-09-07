@@ -19,6 +19,13 @@ export const potions: PotionDef[] = [
     effects: [{ op: 'heal', value: 15 }],
   },
   {
+    id: 'greater_healing',
+    name: '대형 치유 물약', nameEn: 'Greater Healing Potion',
+    text: '체력 30을 회복한다.', textEn: 'Restore 30 HP.',
+    rarity: 'uncommon',
+    effects: [{ op: 'heal', value: 30 }],
+  },
+  {
     id: 'stoneskin',
     name: '돌비늘 물약', nameEn: 'Stoneskin Potion',
     text: '방어도 12를 얻는다.', textEn: 'Gain 12 Block.',

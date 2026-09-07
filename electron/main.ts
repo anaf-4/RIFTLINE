@@ -10,32 +10,43 @@ const { autoUpdater } = electronUpdater;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // 자동 업데이트: NSIS 설치본에서만 동작한다 (포터블 exe는 electron-updater가 지원하지 않는다).
-// GitHub Releases에 새 버전이 올라오면 자동으로 감지해 백그라운드로 내려받고,
-// 앱을 재시작할 때 설치한다. package.json의 build.publish가 대상 저장소를 지정한다.
-autoUpdater.autoDownload = true;
+// GitHub Releases에 새 버전이 올라오면 감지해서 렌더러에 알리고, 사용자가 "업데이트" 버튼을
+// 눌러야 실제로 다운로드를 시작한다 (자동으로 조용히 받지 않는다). 다운로드가 끝나면 다시
+// 알려서 "지금 재시작" 버튼으로 설치하거나, 누르지 않으면 앱을 종료할 때 자동 설치된다.
+autoUpdater.autoDownload = false;
 autoUpdater.autoInstallOnAppQuit = true;
 
 function setupAutoUpdater() {
   if (!app.isPackaged) return; // 개발 모드에서는 건너뛴다
+
+  const send = (channel: string, ...args: unknown[]) => {
+    const win = BrowserWindow.getAllWindows()[0];
+    win?.webContents.send(channel, ...args);
+  };
 
   autoUpdater.on('error', (err) => {
     console.error('[auto-update] error:', err);
   });
   autoUpdater.on('update-available', (info) => {
     console.log('[auto-update] update available:', info.version);
+    send('rl-update-available', info.version);
   });
   autoUpdater.on('update-downloaded', (info) => {
-    console.log('[auto-update] downloaded, will install on quit:', info.version);
+    console.log('[auto-update] downloaded, ready to install:', info.version);
+    send('rl-update-downloaded', info.version);
   });
 
-  autoUpdater.checkForUpdatesAndNotify().catch((err) => {
+  ipcMain.handle('rl-update-download', () => autoUpdater.downloadUpdate());
+  ipcMain.handle('rl-update-install', () => autoUpdater.quitAndInstall());
+
+  autoUpdater.checkForUpdates().catch((err) => {
     console.error('[auto-update] check failed:', err);
   });
 
   // 이후 6시간마다 재확인 (장시간 켜두는 사용자를 위해)
   setInterval(
     () => {
-      autoUpdater.checkForUpdatesAndNotify().catch(() => {});
+      autoUpdater.checkForUpdates().catch(() => {});
     },
     6 * 60 * 60 * 1000
   );

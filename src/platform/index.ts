@@ -14,6 +14,10 @@ declare global {
       save(key: string, value: string): Promise<void>;
       load(key: string): Promise<string | null>;
       remove(key: string): Promise<void>;
+      onUpdateAvailable(cb: (version: string) => void): void;
+      onUpdateDownloaded(cb: (version: string) => void): void;
+      downloadUpdate(): Promise<void>;
+      installUpdate(): Promise<void>;
     };
   }
 }

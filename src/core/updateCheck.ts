@@ -12,6 +12,9 @@ export interface UpdateInfo {
   latestVersion?: string;
   downloadUrl?: string;
   releaseUrl?: string;
+  source?: 'electron' | 'android';
+  downloading?: boolean;
+  downloaded?: boolean;
 }
 
 function parseVersion(v: string): number[] {

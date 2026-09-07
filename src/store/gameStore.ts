@@ -64,6 +64,9 @@ interface Store {
   viewAchievements: () => void;
   setLanguage: (lang: 'ko' | 'en') => void;
   markTutorialSeen: () => void;
+  downloadUpdate: () => void;
+  installUpdate: () => void;
+  dismissUpdate: () => void;
 
   selectMapNode: (nodeId: string) => void;
   selectCard: (cardUid: string) => void;
@@ -137,11 +140,22 @@ export const useGameStore = create<Store>((set, get) => ({
     const [meta, saved] = await Promise.all([loadMeta(), hasSavedRun()]);
     set((s) => ({ meta, ui: { ...s.ui, hasSave: saved } }));
 
-    // 자동 업데이트는 Electron(electron-updater)에서 자체 처리한다.
-    // 여기서는 안드로이드 사이드로드 빌드에서만 "새 버전 있음" 배너를 위해 확인한다.
+    // 안드로이드 사이드로드 빌드: "새 버전 있음" 배너를 위해 GitHub Releases를 직접 확인한다.
     if (Capacitor.isNativePlatform()) {
       const updateInfo = await checkForUpdate();
-      if (updateInfo.available) set((s) => ({ ui: { ...s.ui, updateInfo } }));
+      if (updateInfo.available) set((s) => ({ ui: { ...s.ui, updateInfo: { ...updateInfo, source: 'android' } } }));
+    }
+
+    // Electron: 메인 프로세스(electron-updater)가 감지한 업데이트를 렌더러에 알려준다.
+    if (window.riftlineElectron) {
+      window.riftlineElectron.onUpdateAvailable((version) => {
+        set((s) => ({ ui: { ...s.ui, updateInfo: { available: true, latestVersion: version, source: 'electron' } } }));
+      });
+      window.riftlineElectron.onUpdateDownloaded((version) => {
+        set((s) => ({
+          ui: { ...s.ui, updateInfo: { available: true, latestVersion: version, source: 'electron', downloaded: true } },
+        }));
+      });
     }
   },
 
@@ -190,6 +204,25 @@ export const useGameStore = create<Store>((set, get) => ({
     const newMeta = { ...get().meta, tutorialSeen: true };
     set({ meta: newMeta });
     persistMeta(newMeta);
+  },
+
+  downloadUpdate: () => {
+    const { ui } = get();
+    if (ui.updateInfo.source === 'electron') {
+      set((s) => ({ ui: { ...s.ui, updateInfo: { ...s.ui.updateInfo, downloading: true } } }));
+      window.riftlineElectron?.downloadUpdate();
+    } else if (ui.updateInfo.source === 'android') {
+      const url = ui.updateInfo.downloadUrl ?? ui.updateInfo.releaseUrl;
+      if (url) window.open(url, '_blank', 'noopener,noreferrer');
+    }
+  },
+
+  installUpdate: () => {
+    window.riftlineElectron?.installUpdate();
+  },
+
+  dismissUpdate: () => {
+    set((s) => ({ ui: { ...s.ui, updateInfo: { available: false } } }));
   },
 
   selectMapNode: (nodeId) => {

@@ -5,6 +5,8 @@ import Battlefield from '../components/Battlefield';
 import PlayZone, { type FlyingCard } from '../components/PlayZone';
 import TutorialOverlay from '../components/TutorialOverlay';
 import GlossaryModal from '../components/GlossaryModal';
+import InfoModal from '../components/InfoModal';
+import { potionMap } from '../../data/potions';
 import { useT, useLocale } from '../../i18n/useT';
 import '../components/Battlefield.css';
 import './CombatScreen.css';
@@ -32,6 +34,7 @@ export default function CombatScreen() {
   const [enemyShake, setEnemyShake] = useState<string | null>(null);
   const [endingTurn, setEndingTurn] = useState(false);
   const [showGlossary, setShowGlossary] = useState(false);
+  const [potionConfirmSlot, setPotionConfirmSlot] = useState<number | null>(null);
   const prevPlayerHp = useRef<number | null>(null);
   const prevEnemyHp = useRef<Map<string, number>>(new Map());
 
@@ -115,6 +118,32 @@ export default function CombatScreen() {
 
       {showGlossary && <GlossaryModal locale={locale} onClose={() => setShowGlossary(false)} />}
 
+      {potionConfirmSlot !== null &&
+        (() => {
+          const potionId = p.potions[potionConfirmSlot];
+          const potion = potionId ? potionMap[potionId] : null;
+          if (!potion) return null;
+          return (
+            <InfoModal title={locale === 'ko' ? potion.name : potion.nameEn} onClose={() => setPotionConfirmSlot(null)}>
+              <div style={{ marginBottom: 16 }}>{locale === 'ko' ? potion.text : potion.textEn}</div>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button
+                  className="btn btn-accent"
+                  onClick={() => {
+                    usePotionInCombat(potionConfirmSlot);
+                    setPotionConfirmSlot(null);
+                  }}
+                >
+                  {t('use_potion')}
+                </button>
+                <button className="btn" onClick={() => setPotionConfirmSlot(null)}>
+                  {t('cancel')}
+                </button>
+              </div>
+            </InfoModal>
+          );
+        })()}
+
       <div className="rl-combat-battlefield-zone" onClick={() => isTargeting && cancelTargeting()}>
         <Battlefield
           combat={combat}
@@ -153,8 +182,7 @@ export default function CombatScreen() {
                   className="btn rl-potion-btn"
                   style={{ opacity: potionId ? 1 : 0.3 }}
                   disabled={!potionId || combat.turnPhase !== 'player'}
-                  title={potionId ?? undefined}
-                  onClick={() => usePotionInCombat(i)}
+                  onClick={() => setPotionConfirmSlot(i)}
                 >
                   <span className="rl-icon-potion" style={{ backgroundImage: 'url(assets/icons/icon_potion.png)' }} />
                 </button>
